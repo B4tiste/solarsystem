@@ -1,0 +1,59 @@
+* {
+    background-color: black;
+}
+
+.astre {
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.etoile {
+    background-color: yellow;
+    transform: translate(-25%, -25%);
+}
+
+.test {
+    width: 12px;
+}
+
+/* Planetes */
+.mercure {
+    background-color: tan;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+}
+
+.terre {
+    background-color: green;
+    width: 30px;
+    height: 30px;
+}
+
+.saturne {
+    background-color: orange;
+    width: 20px;
+    height: 20px;
+}
+
+.plaTest {
+    background-color: red;
+    width: 30px;
+    height: 30px;
+}
+
+/* Etoiles */
+.soleil {
+    width: 50px;
+    height: 50px;
+}
+
+.test {
+    background-color: red;
+    width: 20px;
+    height: 20px;
+    z-index: 999;
+}
