@@ -1,6 +1,8 @@
 /* Variables */
 let cpt = 0;
 
+let multi = 60;
+
 /* Déclaration des éléments qui composeront le système solaire */
 let astres = [];
 let soleil;
@@ -8,7 +10,7 @@ let terre;
 
 function setup() {
     // Change the draw() function delay
-    frameRate(30);
+    frameRate(60);
 
     // Create a canvas that fills the browser window and starts at the top left
     createCanvas(windowWidth, windowHeight);
@@ -17,11 +19,29 @@ function setup() {
         {
             type: "etoile",
             nom: "Soleil",
-            masse: 70,
+            masse: 25,
             coords: createVector(0, 0),
             vitesse: createVector(0, 0),
             couleur: "yellow",
             element: null,
+        },
+        {
+            type: "planete",
+            nom: "Mercure",
+            masse: 10,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "beige",
+            astre: null,
+        },
+        {
+            type: "planete",
+            nom: "Venus",
+            masse: 20,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "orange",
+            astre: null,
         },
         {
             type: "planete",
@@ -39,6 +59,24 @@ function setup() {
             coords: { x: [], y: [] },
             vitesse: createVector(0, 0),
             couleur: "red",
+            astre: null,
+        },
+        {
+            type: "planete",
+            nom: "Jupiter",
+            masse: 40,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "orange",
+            astre: null,
+        },
+        {
+            type: "planete",
+            nom: "Saturne",
+            masse: 35,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "beige",
             astre: null,
         },
     ];
@@ -73,11 +111,19 @@ function draw() {
     translate(width / 2, height / 2);
     background(100);
     for (let astre of astres) {
+        if (astre.type === "planete") {
+            astre.element.updatePath();
+        }
         astre.element.show();
     }
 
     if (cpt >= astres[1].coords.x.length) {
         cpt = 0;
+        for (let astre of astres) {
+            if (astre.type === "planete") {
+                astre.element.trainee = []
+            }
+        }
     } else {
         cpt++;
     }
@@ -101,20 +147,50 @@ class Astre {
         this.vitesse = vitesse;
         this.couleur = couleur;
         this.rayon = this.masse;
+        this.trainee = [];
 
         this.show = function () {
             noStroke();
             fill(this.couleur);
+            /* Etoiles */
             if (this.type === "etoile") {
                 ellipse(this.coords.x, this.coords.y, this.rayon, this.rayon);
+                fill("white");
+                text(
+                    this.nom,
+                    this.coords.x + this.rayon / 2,
+                    this.coords.y + this.rayon / 2
+                );
             } else if (this.type === "planete") {
+                /* Planètes */
                 ellipse(
-                    parseFloat(this.coords.x[cpt]) * 100,
-                    parseFloat(this.coords.y[cpt]) * 100,
+                    parseFloat(this.coords.x[cpt]) * multi,
+                    parseFloat(this.coords.y[cpt]) * multi,
                     this.rayon,
                     this.rayon
                 );
+                fill("white");
+                text(
+                    this.nom,
+                    this.coords.x[cpt] * multi + this.rayon / 2,
+                    this.coords.y[cpt] * multi + this.rayon / 2
+                );
+
+                // Création des lignes de trainée pour suivre la trajectoire de la planète
+                stroke(this.couleur)
+                for (let i = 0; i < this.trainee.length; i++) {
+                    line(
+                        this.coords.x[i] * multi,
+                        this.coords.y[i] * multi,
+                        this.coords.x[i + 1] * multi,
+                        this.coords.y[i + 1] * multi
+                    );
+                }
             }
+        };
+
+        this.updatePath = function () {
+            this.trainee.push({ x: this.coords.x[cpt], y: this.coords.y[cpt] });
         };
     }
 }
