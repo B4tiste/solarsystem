@@ -1,116 +1,120 @@
-/* Data */
-// If x = 1, then the distance is 10 pixels, if x = 2, then the distance is 20 pixels, etc. Same goes for y.
-let coords = { x: [], y: [] };
+/* Variables */
+let cpt = 0;
 
-// x.json @ https://jsonkeeper.com/b/NJ7J
-// y.json @ https://jsonkeeper.com/b/KH24
+/* Déclaration des éléments qui composeront le système solaire */
+let astres = [];
+let soleil;
+let terre;
 
-// read the content of the array "x" in the ./x.json
-fetch("./x.json")
-    .then((response) => response.text())
-    .then((data) => {
-        data = JSON.parse(data);
-        coords.x = data.x;
-    });
+function setup() {
+    // Change the draw() function delay
+    frameRate(30);
 
-// read the content of the array "y" in the ./y.json
-fetch("./y.json")
-    .then((response) => response.text())
-    .then((data) => {
-        data = JSON.parse(data);
-        coords.y = data.y;
-    });
+    // Create a canvas that fills the browser window and starts at the top left
+    createCanvas(windowWidth, windowHeight);
 
-// Compteur
-let counter = 0;
+    astres = [
+        {
+            type: "etoile",
+            nom: "Soleil",
+            masse: 70,
+            coords: createVector(0, 0),
+            vitesse: createVector(0, 0),
+            couleur: "yellow",
+            element: null,
+        },
+        {
+            type: "planete",
+            nom: "Terre",
+            masse: 25,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "blue",
+            astre: null,
+        },
+        {
+            type: "planete",
+            nom: "Mars",
+            masse: 20,
+            coords: { x: [], y: [] },
+            vitesse: createVector(0, 0),
+            couleur: "red",
+            astre: null,
+        },
+    ];
 
-const soleil = document.querySelector(".soleil");
+    /* Création des Astres */
+    for (let astre of astres) {
+        // Dans le cas d'une planète, récupération des coordonées de la planète
+        if (astre.type === "planete") {
+            fetch("./data/data.json")
+                .then((response) => response.text())
+                .then((data) => {
+                    data = JSON.parse(data);
+                    astre.coords.x = data[astre.nom].X;
+                    astre.coords.y = data[astre.nom].Y;
+                });
+        }
 
-const offsetSoleil = parseFloat(getComputedStyle(document.querySelector(".etoile")).width) / 4;
-console.log(offsetSoleil);
-
-/*  Soleil */
-const soleilX = window.innerWidth / 2;
-const soleilY = window.innerHeight / 2;
-
-soleil.style.left = `${soleilX}px`;
-soleil.style.top = `${soleilY}px`;
-
-function update(planete) {
-    planete.theta += planete.speed;
-    planete.el.style.left = `${
-        Math.cos(planete.theta) * planete.distance + soleilX + offsetSoleil
-    }px`;
-    planete.el.style.top = `${
-        Math.sin(planete.theta) * planete.distance + soleilY + offsetSoleil
-    }px`;
+        // Création de l'élément
+        astre.element = new Astre(
+            astre.type,
+            astre.nom,
+            astre.masse,
+            astre.coords,
+            astre.vitesse,
+            astre.couleur
+        );
+    }
 }
 
-function update2(planete) {
-    // On remet le compteur à 0 quand il atteint la taille de l'array
-    if (counter > coords.x.length) {
-        counter = 0;
+function draw() {
+    // Il faut appliquer un offset pour centrer tous les éléments par rapport au centre de la page
+    translate(width / 2, height / 2);
+    background(100);
+    for (let astre of astres) {
+        astre.element.show();
+    }
+
+    if (cpt >= astres[1].coords.x.length) {
+        cpt = 0;
     } else {
-        counter++;
+        cpt++;
     }
-
-    const x = coords.x[counter];
-    const y = coords.y[counter];
-
-    // Apply the data to the planet, centered aroud the sun
-    planete.el.style.left = `${100 * parseFloat(x) + soleilX + offsetSoleil}px`;
-    planete.el.style.top = `${100 * parseFloat(y) + soleilY + offsetSoleil}px`;
 }
 
-/* Planetes */
-let planetes = [
-    {
-        name: "Mercure",
-        el: document.querySelector(".mercure"),
-        speed: 0.01,
-        theta: 0,
-        distance: 60,
-    },
-    {
-        name: "Terre",
-        el: document.querySelector(".terre"),
-        speed: 0.005,
-        theta: 0,
-        distance: 200,
-    },
-    {
-        name: "Saturne",
-        el: document.querySelector(".saturne"),
-        speed: 0.001,
-        theta: 0,
-        distance: 250,
-    },
-];
+/**
+ * Fonction-Clasee Astre()
+ * @param {string} type Représente le type de l'astre créé
+ * @param {string} nom Représente le nom de l'astre créé
+ * @param {int} masse Représente le valeur de la masse de l'astre
+ * @param {vector} coords Représente les coordonées de l'astre (0, 0) ==> Coin supérieur droit de l'écran
+ * @param {vector} vitesse Représente la valeur et la direction du déplacement de l'astre
+ * @param {string/rgb} couleur Couleur de l'astre
+ */
+class Astre {
+    constructor(type, nom, masse, coords, vitesse, couleur) {
+        this.type = type;
+        this.nom = nom;
+        this.masse = masse;
+        this.coords = coords;
+        this.vitesse = vitesse;
+        this.couleur = couleur;
+        this.rayon = this.masse;
 
-// Révolution des planetes
-setInterval(() => {
-    for (let planete of planetes) {
-        update(planete);
+        this.show = function () {
+            noStroke();
+            fill(this.couleur);
+            if (this.type === "etoile") {
+                ellipse(this.coords.x, this.coords.y, this.rayon, this.rayon);
+            } else if (this.type === "planete") {
+                ellipse(
+                    parseFloat(this.coords.x[cpt]) * 100,
+                    parseFloat(this.coords.y[cpt]) * 100,
+                    this.rayon,
+                    this.rayon
+                );
+            }
+        };
     }
-}, 1);
-
-const plaTest = {
-    el: document.querySelector(".plaTest"),
-    pos: {
-        x: null,
-        y: null,
-    },
-};
-
-// Déplacement de la planète, en utilisant les données de data
-setInterval(() => {
-    update2(plaTest);
-}, 1);
-
-
-/* TESTS */
-
-const test = document.querySelector(".test");
-
-test.style.top = `${soleilY + offsetSoleil - 10}px`;
-test.style.left = `${soleilX + offsetSoleil - 10}px`;
+}
